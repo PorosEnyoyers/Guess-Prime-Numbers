@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Guess Prime Numbers.vcxproj" Id="b1f09c2c-869b-46b2-b37f-4c060b349908" />
+</Solution>
