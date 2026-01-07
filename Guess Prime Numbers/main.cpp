@@ -6,6 +6,7 @@
 #include <string>
 #include <optional>
 #include <format>
+#include <vector>
 
 bool is_prime(int n)
 {
@@ -93,7 +94,7 @@ void guess_number_or_give_up(int num)
 	std::cout << "Exit the program. The number was " << num << '\n';
 }
 
-void guess_number_with_clues(int number, auto message)
+void guess_number_with_clues(int number, auto& messages)
 {
 	std::cout << "Guess the number or Enter any letter to quit. \n";
 	std::optional <int> guess;
@@ -105,7 +106,17 @@ void guess_number_with_clues(int number, auto message)
 			return;
 		}
 		std::cout << std::format("{:0>5}", (guess.value())) << " is wrong. Try again\n";
-		std::cout << message(number, guess.value());
+		auto clues = (messages[2])(guess.value());
+		std::cout << clues;
+		for (auto message : messages)
+		{
+			auto clue = message(guess.value());
+			if (clue.length())
+			{
+				std::cout << clue;
+				break;
+			}
+		}
 	}
 	std::cout << std::format("Exit the program!!! The number was {:0>5}\n", (number));
 }
@@ -118,7 +129,7 @@ std::string check_which_digits_correct(int number, int guess)
 	for (size_t i{ 0 }, stop{ gs.length() }; i < stop; ++i)
 	{
 		char guess_char = gs[i];
-		if (guess_char == ns[i])
+		if (guess_char == ns[i] && i < ns.length() )
 		{
 			matches[i] = '*';
 			ns[i] = '*';
@@ -127,7 +138,7 @@ std::string check_which_digits_correct(int number, int guess)
 	for (size_t i{ 0 }, stop{ gs.length() }; i < stop; ++i)
 	{
 		char guess_char = gs[i];
-		if (matches[i] != '*')
+		if (matches[i] != '*' && i < ns.length())
 		{
 			if (size_t idx{ ns.find(guess_char, 0) }; idx != std::string::npos)
 			{
@@ -141,9 +152,25 @@ std::string check_which_digits_correct(int number, int guess)
 
 int main()
 {
-	auto message = [](int number, int guess) {
+	const int number{ generate_prime_number() };
+	auto check_digits = [&number](int guess) {
 		return std::format("{}\n", check_which_digits_correct(number, guess));
 		};
-	guess_number_with_clues(generate_prime_number(), message);
+
+	auto check_prime = [](int guess) {
+		return std::string((is_prime(guess)) ? "" : "Not prime\n");
+		};
+
+	auto check_length = [](int guess) {
+		return std::string(guess < 100000 ? "" : "Too long\n");
+		};
+
+	std::vector<std::function<std::string(int)>> messages{
+		check_length,
+		check_prime,
+		check_digits
+	};
+
+	guess_number_with_clues(generate_prime_number(), messages);
 	return 0;
 }
